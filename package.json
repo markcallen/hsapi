@@ -1,0 +1,19 @@
+{
+  "name": "hsapi",
+  "author": "Mark Allen <mark.allen@hootsuite.com>",
+  "version": "1.0.0",
+  "description": "Access to Hootsuite API",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^3.4.6",
+    "restify": "^4.3.0",
+    "unirest": "^0.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0"
+}
