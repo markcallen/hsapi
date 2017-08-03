@@ -13,20 +13,29 @@ class HootApi {
     this.password = password;
     this.memberId = memberId;
     this.organizationId = organizationId;
+    this.organizationAccessToken = null;
+    this.memberAccessToken = null;
+    this.passwordAccessToken = null;
   }
 
   getPasswordAccessToken() {
+    var self = this;
     return new Promise((resolve, reject) => {
-      unirest.post('https://apis.hootsuite.com/auth/oauth/v2/token')
-      .headers({'Content-Type': 'application/x-www-form-urlencoded'})
-      .send('grant_type=password')
-      .send('username=' + this.username)
-      .send('password=' + this.password)
-      .send('client_id=' + this.hs_client_id)
-      .send('client_secret=' + this.hs_client_secret)
-      .end(function (response) {
-        resolve(response.body);
-      });
+      if (self.passwordAccessToken != null) {
+        resolve(self.passwordAccessToken);
+      } else {
+        unirest.post('https://apis.hootsuite.com/auth/oauth/v2/token')
+        .headers({'Content-Type': 'application/x-www-form-urlencoded'})
+        .send('grant_type=password')
+        .send('username=' + this.username)
+        .send('password=' + this.password)
+        .send('client_id=' + this.hs_client_id)
+        .send('client_secret=' + this.hs_client_secret)
+        .end(function (response) {
+          self.passwordAccessToken = response.body;
+          resolve(response.body);
+        });
+      }
     });
   }
 
@@ -44,30 +53,42 @@ class HootApi {
   }
 
   getOrganizationAccessToken(hs_access_token) {
+    var self = this;
     return new Promise((resolve, reject) => {
-      unirest.post('https://apis.hootsuite.com/v1/tokens')
-      .type('json')
-      .headers({'Authorization': 'Bearer ' + hs_access_token})
-      .send({
-        "organizationId": this.organizationId
-       })
-      .end(function (response) {
-        resolve(response.body);
-      });
+      if (self.organizationAccessToken != null) {
+        resolve(self.organizationAccessToken);
+      } else {
+        unirest.post('https://apis.hootsuite.com/v1/tokens')
+        .type('json')
+        .headers({'Authorization': 'Bearer ' + hs_access_token})
+        .send({
+          "organizationId": this.organizationId
+         })
+        .end(function (response) {
+          self.organizationAccessToken = response.body;
+          resolve(response.body);
+        });
+      }
     });
   }
 
   getMemberAccessToken(hs_access_token) {
+    var self = this;
     return new Promise((resolve, reject) => {
-      unirest.post('https://apis.hootsuite.com/v1/tokens')
-      .type('json')
-      .headers({'Authorization': 'Bearer ' + hs_access_token})
-      .send({
-        "memberId": this.memberId
-       })
-      .end(function (response) {
-        resolve(response.body);
-      });
+      if (self.memberAccessToken != null) {
+        resolve(self.memberAccessToken);
+      } else {
+        unirest.post('https://apis.hootsuite.com/v1/tokens')
+        .type('json')
+        .headers({'Authorization': 'Bearer ' + hs_access_token})
+        .send({
+          "memberId": this.memberId
+         })
+        .end(function (response) {
+          self.memberAccessToken = response.body;
+          resolve(response.body);
+        });
+      }
     });
   }
 
@@ -108,6 +129,21 @@ class HootApi {
     })();
   }
 
+  member({memberId}) {
+    var self = this;
+    return Promise.coroutine(function* () {
+      var authHeader = yield self.header();
+
+      return new Promise(function(resolve, reject) {
+        unirest.get('https://apis.hootsuite.com/v1/members/' + memberId)
+        .headers(authHeader)
+        .end(function (response) {
+          resolve(response.body);
+        });
+      });
+    })();
+  }
+
   socialProfiles() {
     var self = this;
     return Promise.coroutine(function* () {
@@ -115,6 +151,21 @@ class HootApi {
 
       return new Promise(function(resolve, reject) {
         unirest.get('https://apis.hootsuite.com/v1/socialProfiles')
+        .headers(authHeader)
+        .end(function (response) {
+          resolve(response.body);
+        });
+      });
+    })();
+  }
+
+  socialProfile({socialProfileId}) {
+    var self = this;
+    return Promise.coroutine(function* () {
+      var authHeader = yield self.header();
+
+      return new Promise(function(resolve, reject) {
+        unirest.get('https://apis.hootsuite.com/v1/socialProfiles/' + socialProfileId)
         .headers(authHeader)
         .end(function (response) {
           resolve(response.body);
@@ -152,6 +203,22 @@ class HootApi {
     })();
   }
 
+  getMessage({messageId}) {
+    var self = this;
+    return Promise.coroutine(function* () {
+      var authHeader = yield self.header();
+
+      return new Promise(function(resolve, reject) {
+        unirest.get('https://apis.hootsuite.com/v1/messages/' + messageId)
+        .type('json')
+        .headers(authHeader)
+        .end(function (response) {
+          resolve(response.body);
+        });
+      });
+    })();
+  }
+
   acceptMessage({messageId}) {
     var self = this;
     return Promise.coroutine(function* () {
@@ -159,7 +226,6 @@ class HootApi {
 
       return new Promise(function(resolve, reject) {
         unirest.post('https://apis.hootsuite.com/v1/messages/' + messageId + '/approve')
-        .type('json')
         .headers(authHeader)
         .send({
           "version": "1"
@@ -190,6 +256,22 @@ class HootApi {
       });
     })();
   }
+
+  organizationMembers() {
+    var self = this;
+    return Promise.coroutine(function* () {
+      var authHeader = yield self.header();
+
+      return new Promise(function(resolve, reject) {
+        unirest.get('https://apis.hootsuite.com/v1/organizations/' + self.organizationId + '/members')
+        .headers(authHeader)
+        .end(function (response) {
+          resolve(response.body);
+        });
+      });
+    })();
+  }
+
 }
 
 module.exports = HootApi;
