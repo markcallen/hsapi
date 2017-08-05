@@ -226,6 +226,7 @@ class HootApi {
 
       return new Promise(function(resolve, reject) {
         unirest.post('https://apis.hootsuite.com/v1/messages/' + messageId + '/approve')
+        .type('json')
         .headers(authHeader)
         .send({
           "sequenceNumber": "1",
