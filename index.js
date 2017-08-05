@@ -228,7 +228,8 @@ class HootApi {
         unirest.post('https://apis.hootsuite.com/v1/messages/' + messageId + '/approve')
         .headers(authHeader)
         .send({
-          "version": "1"
+          "sequenceNumber": "1",
+          "reviewerType": "EXTERNAL"
         })
         .end(function (response) {
           resolve(response.body);
@@ -247,8 +248,9 @@ class HootApi {
         .type('json')
         .headers(authHeader)
         .send({
-          "reason": rejecetReason,
-          "version": "1"
+          "sequenceNumber": "1",
+          "reviewerType": "EXTERNAL"
+          "reason": rejecetReason
         })
         .end(function (response) {
           resolve(response.body);
