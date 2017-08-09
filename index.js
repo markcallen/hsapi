@@ -16,13 +16,38 @@ class HootApi {
     this.organizationAccessToken = null;
     this.memberAccessToken = null;
     this.passwordAccessToken = null;
+    this.expiresAt = null;
+  }
+
+  setExpiresAt(expiresIn) {
+    this.expiresAt = (new Date()).getTime() + expiresIn;
+  }
+
+  refreshToken(token) {
+    var self = this;
+    return new Promise((resolve, reject) => {
+      if ((new Date()).getTime() > self.expiresAt) {
+        unirest.post('https://apis.hootsuite.com/auth/oauth/v2/token')
+          .headers({'Content-Type': 'application/x-www-form-urlencoded'})
+          .send('grant_type=refresh_token')
+          .send('client_id=' + this.hs_client_id)
+          .send('client_secret=' + this.hs_client_secret)
+          .send('refresh_token=' + token.refresh_token)
+          .end(function (response) {
+            setExpiresAt(response.body.expires_in);
+            resolve(response.body);
+        });
+      } else {
+        resolve(token);
+      }
+    });
   }
 
   getPasswordAccessToken() {
     var self = this;
     return new Promise((resolve, reject) => {
       if (self.passwordAccessToken != null) {
-        resolve(self.passwordAccessToken);
+        resolve(self.refreshToken(self.passwordAccessToken));
       } else {
         unirest.post('https://apis.hootsuite.com/auth/oauth/v2/token')
         .headers({'Content-Type': 'application/x-www-form-urlencoded'})
@@ -33,6 +58,7 @@ class HootApi {
         .send('client_secret=' + this.hs_client_secret)
         .end(function (response) {
           self.passwordAccessToken = response.body;
+          self.setExpiresAt(response.body.expires_in);
           resolve(response.body);
         });
       }
@@ -56,7 +82,7 @@ class HootApi {
     var self = this;
     return new Promise((resolve, reject) => {
       if (self.organizationAccessToken != null) {
-        resolve(self.organizationAccessToken);
+        resolve(self.refreshToken(self.organizationAccessToken));
       } else {
         unirest.post('https://apis.hootsuite.com/v1/tokens')
         .type('json')
@@ -66,6 +92,7 @@ class HootApi {
          })
         .end(function (response) {
           self.organizationAccessToken = response.body;
+          self.setExpiresAt(response.body.expires_in);
           resolve(response.body);
         });
       }
@@ -76,7 +103,7 @@ class HootApi {
     var self = this;
     return new Promise((resolve, reject) => {
       if (self.memberAccessToken != null) {
-        resolve(self.memberAccessToken);
+        resolve(self.refreshToken(self.memberAccessToken));
       } else {
         unirest.post('https://apis.hootsuite.com/v1/tokens')
         .type('json')
@@ -86,6 +113,7 @@ class HootApi {
          })
         .end(function (response) {
           self.memberAccessToken = response.body;
+          self.setExpiresAt(response.body.expires_in);
           resolve(response.body);
         });
       }
