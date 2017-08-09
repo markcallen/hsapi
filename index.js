@@ -219,7 +219,7 @@ class HootApi {
     })();
   }
 
-  acceptMessage({messageId}) {
+  approveMessage({messageId, sequenceNumber}) {
     var self = this;
     return Promise.coroutine(function* () {
       var authHeader = yield self.header();
@@ -229,7 +229,7 @@ class HootApi {
         .type('json')
         .headers(authHeader)
         .send({
-          "sequenceNumber": "1",
+          "sequenceNumber": sequenceNumber,
           "reviewerType": "EXTERNAL"
         })
         .end(function (response) {
@@ -239,7 +239,7 @@ class HootApi {
     })();
   }
 
-  rejectMessage({messageId, rejectReason}) {
+  rejectMessage({messageId, sequenceNumber, rejectReason}) {
     var self = this;
     return Promise.coroutine(function* () {
       var authHeader = yield self.header();
@@ -249,8 +249,8 @@ class HootApi {
         .type('json')
         .headers(authHeader)
         .send({
-          "sequenceNumber": "1",
-          "reviewerType": "EXTERNAL"
+          "sequenceNumber": sequenceNumber,
+          "reviewerType": "EXTERNAL",
           "reason": rejecetReason
         })
         .end(function (response) {
