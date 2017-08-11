@@ -21,12 +21,15 @@ class HootApi {
 
   setExpiresAt(expiresIn) {
     this.expiresAt = (new Date()).getTime() + expiresIn;
+    consle.log(this.expiresAt);
+    consle.log(new Date(this.expiresAt));
   }
 
   refreshToken(token) {
     var self = this;
     return new Promise((resolve, reject) => {
-      if ((new Date()).getTime() > self.expiresAt) {
+      if (self.expiresAt != null && (new Date()).getTime() > self.expiresAt) {
+        console.log("Refreshing token");
         unirest.post('https://apis.hootsuite.com/auth/oauth/v2/token')
           .headers({'Content-Type': 'application/x-www-form-urlencoded'})
           .send('grant_type=refresh_token')
@@ -92,7 +95,6 @@ class HootApi {
          })
         .end(function (response) {
           self.organizationAccessToken = response.body;
-          self.setExpiresAt(response.body.expires_in);
           resolve(response.body);
         });
       }
@@ -113,7 +115,6 @@ class HootApi {
          })
         .end(function (response) {
           self.memberAccessToken = response.body;
-          self.setExpiresAt(response.body.expires_in);
           resolve(response.body);
         });
       }
