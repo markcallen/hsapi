@@ -37,8 +37,12 @@ class HootApi {
           .send('client_secret=' + this.hs_client_secret)
           .send('refresh_token=' + token.refresh_token)
           .end(function (response) {
-            setExpiresAt(response.body.expires_in);
-            resolve(response.body);
+            if (response.statusCode == 200) {
+              setExpiresAt(response.body.expires_in);
+              resolve(response.body);
+            } else {
+              reject(response.body);
+            }
         });
       } else {
         resolve(token);
@@ -60,9 +64,13 @@ class HootApi {
         .send('client_id=' + this.hs_client_id)
         .send('client_secret=' + this.hs_client_secret)
         .end(function (response) {
-          self.passwordAccessToken = response.body;
-          self.setExpiresAt(response.body.expires_in);
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            self.passwordAccessToken = response.body;
+            self.setExpiresAt(response.body.expires_in);
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       }
     });
@@ -76,7 +84,11 @@ class HootApi {
       .send('client_id=' + this.hs_client_id)
       .send('client_secret=' + this.hs_client_secret)
       .end(function (response) {
-        resolve(response.body);
+        if (response.statusCode == 200) {
+          resolve(response.body);
+        } else {
+          reject(response.body);
+        }
       });
     });
   }
@@ -94,8 +106,12 @@ class HootApi {
           "organizationId": this.organizationId
          })
         .end(function (response) {
-          self.organizationAccessToken = response.body;
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            self.organizationAccessToken = response.body;
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       }
     });
@@ -114,8 +130,12 @@ class HootApi {
           "memberId": this.memberId
          })
         .end(function (response) {
-          self.memberAccessToken = response.body;
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            self.memberAccessToken = response.body;
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       }
     });
@@ -139,7 +159,6 @@ class HootApi {
       console.log(token);
 
       return({'Authorization': 'Bearer ' + token.access_token});
-
      })();
   }
 
@@ -152,7 +171,11 @@ class HootApi {
         unirest.get('https://apis.hootsuite.com/v1/me')
         .headers(authHeader)
         .end(function (response) {
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
@@ -167,7 +190,11 @@ class HootApi {
         unirest.get('https://apis.hootsuite.com/v1/members/' + memberId)
         .headers(authHeader)
         .end(function (response) {
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
@@ -182,7 +209,11 @@ class HootApi {
         unirest.get('https://apis.hootsuite.com/v1/socialProfiles')
         .headers(authHeader)
         .end(function (response) {
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
@@ -197,7 +228,11 @@ class HootApi {
         unirest.get('https://apis.hootsuite.com/v1/socialProfiles/' + socialProfileId)
         .headers(authHeader)
         .end(function (response) {
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
@@ -226,7 +261,11 @@ class HootApi {
           "emailNotification": true
      	})
         .end(function (response) {
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
@@ -242,7 +281,11 @@ class HootApi {
         .type('json')
         .headers(authHeader)
         .end(function (response) {
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
@@ -262,7 +305,12 @@ class HootApi {
           "reviewerType": "EXTERNAL"
         })
         .end(function (response) {
-          resolve(response.body);
+          console.log(response);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
@@ -283,7 +331,11 @@ class HootApi {
           "reason": rejecetReason
         })
         .end(function (response) {
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
@@ -298,7 +350,11 @@ class HootApi {
         unirest.get('https://apis.hootsuite.com/v1/organizations/' + self.organizationId + '/members')
         .headers(authHeader)
         .end(function (response) {
-          resolve(response.body);
+          if (response.statusCode == 200) {
+            resolve(response.body);
+          } else {
+            reject(response.body);
+          }
         });
       });
     })();
