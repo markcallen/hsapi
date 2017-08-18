@@ -27,7 +27,6 @@ class HootApi {
     var self = this;
     return new Promise((resolve, reject) => {
       if (self.expiresAt != null && (new Date()).getTime() > self.expiresAt) {
-        console.log("Refreshing token");
         unirest.post('https://apis.hootsuite.com/auth/oauth/v2/token')
           .headers({'Content-Type': 'application/x-www-form-urlencoded'})
           .send('grant_type=refresh_token')
