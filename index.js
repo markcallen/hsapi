@@ -303,7 +303,6 @@ class HootApi {
           "reviewerType": "EXTERNAL"
         })
         .end(function (response) {
-          console.log(response);
           if (response.statusCode == 200) {
             resolve(response.body);
           } else {
