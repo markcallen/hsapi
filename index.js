@@ -324,7 +324,7 @@ class HootApi {
         .send({
           "sequenceNumber": sequenceNumber,
           "reviewerType": "EXTERNAL",
-          "reason": rejecetReason
+          "reason": rejectReason
         })
         .end(function (response) {
           if (response.statusCode == 200) {
