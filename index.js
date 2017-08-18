@@ -6,7 +6,7 @@ var Promise = require('bluebird');
 
 class HootApi {
 
-  constructor({hs_client_id, hs_client_secret, username, password, memberId, organizationId}) { 
+  constructor({hs_client_id, hs_client_secret, username, password, memberId, organizationId}) {
     this.hs_client_id = hs_client_id;
     this.hs_client_secret = hs_client_secret;
     this.username = username;
@@ -21,8 +21,6 @@ class HootApi {
 
   setExpiresAt(expiresIn) {
     this.expiresAt = (new Date()).getTime() + expiresIn;
-    consle.log(this.expiresAt);
-    consle.log(new Date(this.expiresAt));
   }
 
   refreshToken(token) {
@@ -77,6 +75,7 @@ class HootApi {
   }
 
   getClientCredentialsAccessToken() {
+    var self = this;
     return new Promise((resolve, reject) => {
       unirest.post('https://apis.hootsuite.com/auth/oauth/v2/token')
       .headers({'Content-Type': 'application/x-www-form-urlencoded'})
@@ -85,6 +84,7 @@ class HootApi {
       .send('client_secret=' + this.hs_client_secret)
       .end(function (response) {
         if (response.statusCode == 200) {
+          self.setExpiresAt(response.body.expires_in);
           resolve(response.body);
         } else {
           reject(response.body);
@@ -96,48 +96,40 @@ class HootApi {
   getOrganizationAccessToken(hs_access_token) {
     var self = this;
     return new Promise((resolve, reject) => {
-      if (self.organizationAccessToken != null) {
-        resolve(self.refreshToken(self.organizationAccessToken));
-      } else {
-        unirest.post('https://apis.hootsuite.com/v1/tokens')
-        .type('json')
-        .headers({'Authorization': 'Bearer ' + hs_access_token})
-        .send({
-          "organizationId": this.organizationId
-         })
-        .end(function (response) {
-          if (response.statusCode == 200) {
-            self.organizationAccessToken = response.body;
-            resolve(response.body);
-          } else {
-            reject(response.body);
-          }
-        });
-      }
+      unirest.post('https://apis.hootsuite.com/v1/tokens')
+      .type('json')
+      .headers({'Authorization': 'Bearer ' + hs_access_token})
+      .send({
+        "organizationId": this.organizationId
+       })
+      .end(function (response) {
+        if (response.statusCode == 200) {
+          self.organizationAccessToken = response.body;
+          resolve(response.body);
+        } else {
+          reject(response.body);
+        }
+      });
     });
   }
 
   getMemberAccessToken(hs_access_token) {
     var self = this;
     return new Promise((resolve, reject) => {
-      if (self.memberAccessToken != null) {
-        resolve(self.refreshToken(self.memberAccessToken));
-      } else {
-        unirest.post('https://apis.hootsuite.com/v1/tokens')
-        .type('json')
-        .headers({'Authorization': 'Bearer ' + hs_access_token})
-        .send({
-          "memberId": this.memberId
-         })
-        .end(function (response) {
-          if (response.statusCode == 200) {
-            self.memberAccessToken = response.body;
-            resolve(response.body);
-          } else {
-            reject(response.body);
-          }
-        });
-      }
+      unirest.post('https://apis.hootsuite.com/v1/tokens')
+      .type('json')
+      .headers({'Authorization': 'Bearer ' + hs_access_token})
+      .send({
+        "memberId": this.memberId
+       })
+      .end(function (response) {
+        if (response.statusCode == 200) {
+          self.memberAccessToken = response.body;
+          resolve(response.body);
+        } else {
+          reject(response.body);
+        }
+      });
     });
   }
 
@@ -147,16 +139,22 @@ class HootApi {
       if (self.username != null && self.password != null) {
         var token = yield self.getPasswordAccessToken();
       } else if (self.memberId != null) {
-        var accessToken = yield self.getClientCredentialsAccessToken();
-        var token = yield self.getMemberAccessToken(accessToken.access_token);
+        if ((self.expiresAt == null) || (self.expiresAt != null && (new Date()).getTime() > self.expiresAt)) {
+          var accessToken = yield self.getClientCredentialsAccessToken();
+          var token = yield self.getMemberAccessToken(accessToken.access_token);
+        } else {
+          var token = self.memberAccessToken;
+        }
       } else if (self.organizationId != null) {
-        var accessToken = yield self.getClientCredentialsAccessToken();
-        var token = yield self.getOrganizationAccessToken(accessToken.access_token);
+        if ((self.expiresAt == null) || (self.expiresAt != null && (new Date()).getTime() > self.expiresAt)) {
+          var accessToken = yield self.getClientCredentialsAccessToken();
+          var token = yield self.getOrganizationAccessToken(accessToken.access_token);
+        } else {
+          var token = self.organizationAccessToken;
+        }
       } else {
         throw "not configured correctly";
       }
-
-      console.log(token);
 
       return({'Authorization': 'Bearer ' + token.access_token});
      })();
@@ -249,7 +247,7 @@ class HootApi {
         .headers(authHeader)
         .send({
 	  "text": message,
-          "socialProfileIds": [ 
+          "socialProfileIds": [
             socialProfileId
           ],
           "webhookUrls": [
@@ -363,4 +361,3 @@ class HootApi {
 }
 
 module.exports = HootApi;
-
